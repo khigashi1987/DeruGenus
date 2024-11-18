@@ -9,14 +9,20 @@ import { getAllGenusNames, getGenusData, searchGenus, Genus } from '@/utils/data
 
 export default function Home() {
   const [selectedGenus, setSelectedGenus] = useState<Genus | null>(null)
-  const [selectedRank, setSelectedRank] = useState(0)
+  const [selectedRank, setSelectedRank] = useState(1)
   const [genusNames, setGenusNames] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [activeRange, setActiveRange] = useState('1-100')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   useEffect(() => {
-    setGenusNames(getAllGenusNames())
+    const names = getAllGenusNames()
+    setGenusNames(names)
+    const firstGenus = getGenusData(1)
+    if (firstGenus) {
+      setSelectedGenus(firstGenus)
+    }
   }, [])
 
   useEffect(() => {
@@ -45,6 +51,7 @@ export default function Home() {
       setSelectedGenus(data)
       setSelectedRank(rank)
     }
+    setIsSidebarOpen(false)
   }
 
   const getRangeForRank = (rank: number) => {
@@ -52,10 +59,18 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-col h-screen md:flex-row">
+      {/* モバイルヘッダー */}
+      <div className="md:hidden bg-gray-100 p-4 flex justify-between items-center">
+        <h1 className="text-xl font-bold">デルジーナス Top1000</h1>
+        <Button onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+          {isSidebarOpen ? '閉じる' : 'メニュー'}
+        </Button>
+      </div>
+
       {/* サイドバー */}
-      <div className="w-64 bg-gray-100 p-4 overflow-auto">
-        <h1 className="text-xl font-bold mb-4">デルジーナス Top1000</h1>
+      <div className={`w-full md:w-64 bg-gray-100 p-4 overflow-auto ${isSidebarOpen ? 'block' : 'hidden'} md:block`}>
+        <h1 className="text-xl font-bold mb-4 hidden md:block">デルジーナス Top1000</h1>
         <div className="mb-4">
           <Input
             type="text"
@@ -107,7 +122,7 @@ export default function Home() {
             ).map((genus, index) => (
               <Button
                 key={index}
-                variant="outline"
+                variant={selectedRank === parseInt(activeRange.split('-')[0]) + index ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleGenusSelect(genus, parseInt(activeRange.split('-')[0]) + index)}
               >
